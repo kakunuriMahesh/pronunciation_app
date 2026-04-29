@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../core/theme/app_theme.dart';
 
 class ResultMetricCard extends StatelessWidget {
   final String label;
@@ -21,10 +20,11 @@ class ResultMetricCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: theme.cardColor,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
@@ -46,7 +46,7 @@ class ResultMetricCard extends StatelessWidget {
                   label,
                   style: TextStyle(
                     fontSize: 11,
-                    color: AppColors.textSecondary,
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                     fontWeight: FontWeight.w500,
                   ),
                   maxLines: 1,
@@ -79,7 +79,7 @@ class ResultMetricCard extends StatelessWidget {
                     unit,
                     style: TextStyle(
                       fontSize: 11,
-                      color: AppColors.textSecondary,
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                       fontWeight: FontWeight.w500,
                     ),
                   ),

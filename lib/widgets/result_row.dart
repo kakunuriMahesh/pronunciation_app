@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../core/theme/app_theme.dart';
 
 class ResultRow extends StatelessWidget {
   final String expected;
@@ -15,10 +14,11 @@ class ResultRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: theme.cardColor,
         borderRadius: BorderRadius.circular(10),
         border: Border.all(
           color: statusColor.withValues(alpha: 0.3),
@@ -31,11 +31,11 @@ class ResultRow extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'Expected',
                   style: TextStyle(
                     fontSize: 10,
-                    color: AppColors.textSecondary,
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                   ),
                 ),
                 const SizedBox(height: 2),
@@ -56,11 +56,11 @@ class ResultRow extends StatelessWidget {
               color: statusColor.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(20),
             ),
-            child: const Text(
+            child: Text(
               'Heard',
               style: TextStyle(
                 fontSize: 10,
-                color: AppColors.textSecondary,
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
               ),
             ),
           ),
@@ -69,11 +69,11 @@ class ResultRow extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                const Text(
+                Text(
                   'Heard',
                   style: TextStyle(
                     fontSize: 10,
-                    color: AppColors.textSecondary,
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                   ),
                 ),
                 const SizedBox(height: 2),

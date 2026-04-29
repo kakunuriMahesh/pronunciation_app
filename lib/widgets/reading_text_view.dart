@@ -55,11 +55,12 @@ class _ReadingTextViewState extends State<ReadingTextView>
   }
 
   Widget _buildSimpleText(BuildContext context) {
+    final theme = Theme.of(context);
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: theme.cardColor,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
@@ -89,10 +90,11 @@ class _ReadingTextViewState extends State<ReadingTextView>
   Widget _buildHighlightedText(BuildContext context) {
     final words = widget.text.split(' ');
     final spans = <InlineSpan>[];
+    final theme = Theme.of(context);
 
     for (int i = 0; i < words.length; i++) {
       final word = words[i];
-      Color textColor = AppColors.textPrimary.withValues(alpha: 0.7);
+      Color textColor = theme.colorScheme.onSurface.withValues(alpha: 0.7);
       Color? backgroundColor;
       FontWeight fontWeight = FontWeight.normal;
 
@@ -115,11 +117,11 @@ class _ReadingTextViewState extends State<ReadingTextView>
             fontWeight = FontWeight.w500;
             break;
           case WordMatchStatus.pending:
-            textColor = AppColors.textSecondary.withValues(alpha: 0.5);
+            textColor = theme.colorScheme.onSurface.withValues(alpha: 0.5);
             break;
         }
       } else {
-        textColor = AppColors.textSecondary.withValues(alpha: 0.5);
+        textColor = theme.colorScheme.onSurface.withValues(alpha: 0.5);
       }
 
       spans.add(
@@ -158,7 +160,7 @@ class _ReadingTextViewState extends State<ReadingTextView>
       width: double.infinity,
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: theme.cardColor,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
@@ -174,7 +176,7 @@ class _ReadingTextViewState extends State<ReadingTextView>
         spacing: 4,
         children: List.generate(words.length, (i) {
           final word = words[i];
-          Color textColor = AppColors.textSecondary.withValues(alpha: 0.5);
+          Color textColor = theme.colorScheme.onSurface.withValues(alpha: 0.5);
           Color? backgroundColor;
 
           if (i < widget.matches.length) {
@@ -193,7 +195,7 @@ class _ReadingTextViewState extends State<ReadingTextView>
                 backgroundColor = AppColors.warningOrange.withValues(alpha: 0.15);
                 break;
               case WordMatchStatus.pending:
-                textColor = AppColors.textSecondary.withValues(alpha: 0.5);
+                textColor = theme.colorScheme.onSurface.withValues(alpha: 0.5);
                 break;
             }
           }

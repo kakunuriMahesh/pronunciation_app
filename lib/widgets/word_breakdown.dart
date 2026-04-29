@@ -16,14 +16,15 @@ class WordBreakdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     if (matches.isEmpty) {
-      return _buildFallbackView();
+      return _buildFallbackView(context);
     }
 
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: theme.cardColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -34,21 +35,21 @@ class WordBreakdown extends StatelessWidget {
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  color: AppColors.primaryBlue.withValues(alpha: 0.1),
-                  shape: BoxShape.circle,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryBlue.withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.text_fields,
+                    color: AppColors.primaryBlue,
+                    size: 16,
+                  ),
                 ),
-                child: const Icon(
-                  Icons.text_fields,
-                  color: AppColors.primaryBlue,
-                  size: 16,
-                ),
-              ),
               const SizedBox(width: 8),
               const Text(
                 'Word Breakdown',
@@ -69,13 +70,14 @@ class WordBreakdown extends StatelessWidget {
             }).toList(),
           ),
           const SizedBox(height: 16),
-          _buildLegend(),
+          _buildLegend(context),
         ],
       ),
     );
   }
 
-  Widget _buildFallbackView() {
+  Widget _buildFallbackView(BuildContext context) {
+    final theme = Theme.of(context);
     final words = expectedText
         .toLowerCase()
         .replaceAll(RegExp(r'[^\w\s]'), '')
@@ -86,7 +88,7 @@ class WordBreakdown extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: theme.cardColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -103,22 +105,22 @@ class WordBreakdown extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(6),
                 decoration: BoxDecoration(
-                  color: AppColors.primaryBlue.withValues(alpha: 0.1),
+                  color: theme.colorScheme.primary.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.text_fields,
-                  color: AppColors.primaryBlue,
+                  color: theme.colorScheme.primary,
                   size: 16,
                 ),
               ),
               const SizedBox(width: 8),
-              const Text(
+              Text(
                 'Expected Text',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.textPrimary,
+                  color: theme.colorScheme.onSurface,
                 ),
               ),
             ],
@@ -139,7 +141,7 @@ class WordBreakdown extends StatelessWidget {
                 ),
                 child: Text(
                   word,
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 14,
                     color: AppColors.textSecondary,
                   ),
@@ -153,6 +155,7 @@ class WordBreakdown extends StatelessWidget {
   }
 
   Widget _buildWordChip(WordMatch match, BuildContext context) {
+    final theme = Theme.of(context);
     Color backgroundColor;
     Color textColor;
     Color borderColor;
@@ -177,27 +180,27 @@ class WordBreakdown extends StatelessWidget {
         isTappable = true;
         break;
       case WordMatchStatus.pending:
-        backgroundColor = AppColors.textSecondary.withValues(alpha: 0.1);
-        textColor = AppColors.textSecondary;
-        borderColor = AppColors.textSecondary.withValues(alpha: 0.2);
+        backgroundColor = theme.colorScheme.onSurface.withValues(alpha: 0.1);
+        textColor = theme.colorScheme.onSurface.withValues(alpha: 0.6);
+        borderColor = theme.colorScheme.onSurface.withValues(alpha: 0.2);
         break;
     }
 
     return GestureDetector(
-      onTap: isTappable
-          ? () {
-              final word = match.expectedWord;
-              onWordTap?.call(word);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Pronouncing: $word'),
-                  duration: const Duration(seconds: 1),
-                  behavior: SnackBarBehavior.floating,
-                  backgroundColor: AppColors.primaryBlue,
-                ),
-              );
-            }
-          : null,
+        onTap: isTappable
+            ? () {
+                final word = match.expectedWord;
+                onWordTap?.call(word);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Pronouncing: $word'),
+                    duration: const Duration(seconds: 1),
+                    behavior: SnackBarBehavior.floating,
+                    backgroundColor: theme.colorScheme.primary,
+                  ),
+                );
+              }
+            : null,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         decoration: BoxDecoration(
@@ -252,7 +255,8 @@ class WordBreakdown extends StatelessWidget {
     );
   }
 
-  Widget _buildLegend() {
+  Widget _buildLegend(BuildContext context) {
+    final theme = Theme.of(context);
     return Wrap(
       spacing: 16,
       children: [
@@ -269,7 +273,7 @@ class WordBreakdown extends StatelessWidget {
           label: 'Skipped',
         ),
         _LegendChip(
-          color: AppColors.textSecondary,
+          color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
           label: 'Unread',
         ),
       ],
@@ -288,6 +292,7 @@ class _LegendChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -305,7 +310,7 @@ class _LegendChip extends StatelessWidget {
           label,
           style: TextStyle(
             fontSize: 11,
-            color: AppColors.textSecondary,
+            color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
           ),
         ),
       ],

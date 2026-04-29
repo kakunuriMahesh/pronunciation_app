@@ -11,8 +11,9 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(20),
@@ -71,7 +72,7 @@ class HomeScreen extends StatelessWidget {
                 width: double.infinity,
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: AppColors.white,
+                  color: theme.cardColor,
                   borderRadius: BorderRadius.circular(12),
                   boxShadow: [
                     BoxShadow(
@@ -85,15 +86,15 @@ class HomeScreen extends StatelessWidget {
                   children: [
                     Icon(
                       Icons.history,
-                      color: AppColors.textSecondary,
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                       size: 20,
                     ),
                     const SizedBox(width: 12),
-                    const Expanded(
+                    Expanded(
                       child: Text(
                         'Recent practice sessions will appear here',
                         style: TextStyle(
-                          color: AppColors.textSecondary,
+                          color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                           fontSize: 14,
                         ),
                       ),
@@ -113,9 +114,9 @@ class HomeScreen extends StatelessWidget {
                         ),
                       );
                     },
-                    icon: const Icon(
+                    icon: Icon(
                       Icons.settings_outlined,
-                      color: AppColors.textSecondary,
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                     ),
                   ),
                 ],

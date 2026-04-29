@@ -23,6 +23,7 @@ class ModeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Card(
       elevation: 2,
       shadowColor: Colors.black.withValues(alpha: 0.1),
@@ -65,8 +66,8 @@ class ModeCard extends StatelessWidget {
                       ),
                       child: Text(
                         badgeText!,
-                        style: const TextStyle(
-                          color: AppColors.white,
+                        style: TextStyle(
+                          color: theme.colorScheme.onPrimary,
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
                         ),
@@ -91,13 +92,13 @@ class ModeCard extends StatelessWidget {
                     Icon(
                       Icons.lock_outline,
                       size: 16,
-                      color: AppColors.textSecondary,
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                     ),
                     const SizedBox(width: 4),
                     Text(
                       'Coming Soon',
                       style: TextStyle(
-                        color: AppColors.textSecondary,
+                        color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
                       ),

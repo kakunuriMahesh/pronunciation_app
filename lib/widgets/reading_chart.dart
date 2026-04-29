@@ -13,6 +13,7 @@ class ReadingChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final result = provider.result;
     if (result == null) return const SizedBox.shrink();
 
@@ -33,7 +34,7 @@ class ReadingChart extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: theme.cardColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -50,22 +51,22 @@ class ReadingChart extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(6),
                 decoration: BoxDecoration(
-                  color: AppColors.primaryBlue.withValues(alpha: 0.1),
+                  color: theme.colorScheme.primary.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.show_chart,
-                  color: AppColors.primaryBlue,
+                  color: theme.colorScheme.primary,
                   size: 16,
                 ),
               ),
               const SizedBox(width: 8),
-              const Text(
+              Text(
                 'Reading Timeline',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.textPrimary,
+                  color: theme.colorScheme.onSurface,
                 ),
               ),
             ],
@@ -110,8 +111,8 @@ class ReadingChart extends StatelessWidget {
                           padding: const EdgeInsets.only(top: 8),
                           child: Text(
                             '${value.toInt()}s',
-                            style: const TextStyle(
-                              color: AppColors.textSecondary,
+                            style: TextStyle(
+                              color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                               fontSize: 10,
                             ),
                           ),
@@ -129,8 +130,8 @@ class ReadingChart extends StatelessWidget {
                           padding: const EdgeInsets.only(right: 8),
                           child: Text(
                             '${value.toInt()}%',
-                            style: const TextStyle(
-                              color: AppColors.textSecondary,
+                            style: TextStyle(
+                              color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                               fontSize: 10,
                             ),
                           ),
@@ -142,7 +143,7 @@ class ReadingChart extends StatelessWidget {
                 borderData: FlBorderData(
                   show: true,
                   border: Border.all(
-                    color: AppColors.textSecondary.withValues(alpha: 0.2),
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.2),
                   ),
                 ),
                 minX: 0,
@@ -176,7 +177,7 @@ class ReadingChart extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          _buildLegend(),
+          _buildLegend(context),
           if (provider.pauseEvents.isNotEmpty) ...[
             const SizedBox(height: 12),
             _buildPauseSummary(provider.pauseEvents),
@@ -186,7 +187,7 @@ class ReadingChart extends StatelessWidget {
     );
   }
 
-  Widget _buildLegend() {
+  Widget _buildLegend(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -261,7 +262,9 @@ class _LegendItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Row(
+      mainAxisSize: MainAxisSize.min,
       children: [
         Container(
           width: 16,
@@ -292,7 +295,7 @@ class _LegendItem extends StatelessWidget {
           label,
           style: TextStyle(
             fontSize: 12,
-            color: AppColors.textSecondary,
+            color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
           ),
         ),
       ],

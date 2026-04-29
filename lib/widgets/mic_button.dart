@@ -69,6 +69,7 @@ class _MicButtonState extends State<MicButton>
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return GestureDetector(
       onTap: widget.isListening ? widget.onStopPressed : widget.onPressed,
       child: SizedBox(
@@ -102,12 +103,12 @@ class _MicButtonState extends State<MicButton>
                 shape: BoxShape.circle,
                 color: widget.isListening
                     ? AppColors.errorRed
-                    : AppColors.primaryBlue,
+                    : theme.colorScheme.primary,
                 boxShadow: [
                   BoxShadow(
                     color: (widget.isListening
                             ? AppColors.errorRed
-                            : AppColors.primaryBlue)
+                            : theme.colorScheme.primary)
                         .withValues(alpha: 0.3),
                     blurRadius: 12,
                     spreadRadius: 2,
@@ -116,7 +117,7 @@ class _MicButtonState extends State<MicButton>
               ),
               child: Icon(
                 widget.isListening ? Icons.stop : Icons.mic,
-                color: AppColors.white,
+                color: theme.colorScheme.onPrimary,
                 size: 32,
               ),
             ),

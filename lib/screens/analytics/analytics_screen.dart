@@ -51,10 +51,11 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: theme.scaffoldBackgroundColor,
         elevation: 0,
         leading: IconButton(
           onPressed: () {
@@ -64,20 +65,20 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
           icon: Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: AppColors.primaryBlue.withValues(alpha: 0.1),
+              color: theme.colorScheme.primary.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
-            child: const Icon(
+            child: Icon(
               Icons.arrow_back_ios_new,
-              color: AppColors.primaryBlue,
+              color: theme.colorScheme.primary,
               size: 18,
             ),
           ),
         ),
-        title: const Text(
+        title: Text(
           'Reading Test Results',
           style: TextStyle(
-            color: AppColors.textPrimary,
+            color: theme.colorScheme.onSurface,
             fontWeight: FontWeight.w600,
             fontSize: 18,
           ),
@@ -101,10 +102,10 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    if (_showCelebration) _buildCelebration(),
-                    _buildHeader(result),
+                    if (_showCelebration) _buildCelebration(theme),
+                    _buildHeader(result, theme),
                     const SizedBox(height: 24),
-                    _buildTopMetrics(result),
+                    _buildTopMetrics(result, theme),
                     const SizedBox(height: 20),
                     ReadingChart(provider: provider),
                     const SizedBox(height: 20),
@@ -116,11 +117,11 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
                       },
                     ),
                     const SizedBox(height: 20),
-                    _buildTranscriptSection(result),
+                    _buildTranscriptSection(result, theme),
                     const SizedBox(height: 20),
-                    _buildPerformanceFeedback(tips),
+                    _buildPerformanceFeedback(tips, theme),
                     const SizedBox(height: 24),
-                    _buildActionButtons(provider),
+                    _buildActionButtons(provider, theme),
                     const SizedBox(height: 20),
                   ],
                 ),
@@ -132,7 +133,46 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
     );
   }
 
-  Widget _buildHeader(ReadingResult result) {
+  Widget _buildCelebration(ThemeData theme) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      margin: const EdgeInsets.only(bottom: 20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            AppColors.successGreen.withValues(alpha: 0.15),
+            AppColors.primaryBlue.withValues(alpha: 0.08),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.successGreen.withValues(alpha: 0.3)),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          ScaleTransition(
+            scale: _fadeAnimation,
+            child: const Icon(
+              Icons.emoji_events,
+              size: 40,
+              color: AppColors.gold,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Text(
+            'Excellent Job!',
+            style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+              color: AppColors.successGreen,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHeader(ReadingResult result, ThemeData theme) {
     final scoreColor = result.score >= 90
         ? AppColors.successGreen
         : result.score >= 70
@@ -148,7 +188,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
             height: 80,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: AppColors.white,
+              color: theme.cardColor,
               boxShadow: [
                 BoxShadow(
                   color: scoreColor.withValues(alpha: 0.3),
@@ -168,11 +208,11 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
                     color: scoreColor,
                   ),
                 ),
-                const Text(
+                Text(
                   'SCORE',
                   style: TextStyle(
                     fontSize: 10,
-                    color: AppColors.textSecondary,
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                     fontWeight: FontWeight.w600,
                     letterSpacing: 1,
                   ),
@@ -197,9 +237,9 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
               const SizedBox(height: 4),
               Text(
                 '${result.correctCount}/${result.totalWords} words correct',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 14,
-                  color: AppColors.textSecondary,
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                 ),
               ),
               const SizedBox(height: 8),
@@ -207,7 +247,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
                 borderRadius: BorderRadius.circular(6),
                 child: LinearProgressIndicator(
                   value: result.score / 100,
-                  backgroundColor: Colors.grey.withValues(alpha: 0.1),
+                  backgroundColor: theme.colorScheme.onSurface.withValues(alpha: 0.1),
                   valueColor: AlwaysStoppedAnimation<Color>(scoreColor),
                   minHeight: 8,
                 ),
@@ -227,7 +267,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
     return 'Practice More';
   }
 
-  Widget _buildTopMetrics(ReadingResult result) {
+  Widget _buildTopMetrics(ReadingResult result, ThemeData theme) {
     return GridView.count(
       crossAxisCount: 3,
       shrinkWrap: true,
@@ -276,7 +316,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
           value: result.usedTime.toString(),
           unit: 'sec',
           icon: Icons.timer,
-          color: AppColors.textPrimary,
+          color: theme.colorScheme.onSurface,
         ),
         ResultMetricCard(
           label: 'Mistakes',
@@ -291,11 +331,11 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
     );
   }
 
-  Widget _buildTranscriptSection(ReadingResult result) {
+  Widget _buildTranscriptSection(ReadingResult result, ThemeData theme) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: theme.cardColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -312,22 +352,22 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
               Container(
                 padding: const EdgeInsets.all(6),
                 decoration: BoxDecoration(
-                  color: AppColors.primaryBlue.withValues(alpha: 0.1),
+                  color: theme.colorScheme.primary.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.compare_arrows,
-                  color: AppColors.primaryBlue,
+                  color: theme.colorScheme.primary,
                   size: 16,
                 ),
               ),
               const SizedBox(width: 8),
-              const Text(
+              Text(
                 'Transcript',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.textPrimary,
+                  color: theme.colorScheme.onSurface,
                 ),
               ),
             ],
@@ -336,20 +376,20 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
+              Text(
                 'Expected:',
                 style: TextStyle(
                   fontSize: 12,
-                  color: AppColors.textSecondary,
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                   fontWeight: FontWeight.w500,
                 ),
               ),
               const SizedBox(height: 6),
               Text(
                 '"${result.expectedText}"',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 15,
-                  color: AppColors.textPrimary,
+                  color: theme.colorScheme.onSurface,
                   height: 1.5,
                 ),
               ),
@@ -358,7 +398,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
           Container(
             height: 1,
             margin: const EdgeInsets.symmetric(vertical: 16),
-            color: AppColors.textSecondary.withValues(alpha: 0.2),
+            color: theme.colorScheme.onSurface.withValues(alpha: 0.2),
           ),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -369,7 +409,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
                     'You Read:',
                     style: TextStyle(
                       fontSize: 12,
-                      color: AppColors.textSecondary,
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -410,7 +450,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
     );
   }
 
-  Widget _buildPerformanceFeedback(List<String> tips) {
+  Widget _buildPerformanceFeedback(List<String> tips, ThemeData theme) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -431,22 +471,22 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
               Container(
                 padding: const EdgeInsets.all(6),
                 decoration: BoxDecoration(
-                  color: AppColors.primaryBlue.withValues(alpha: 0.15),
+                  color: theme.colorScheme.primary.withValues(alpha: 0.15),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.lightbulb_outline,
-                  color: AppColors.primaryBlue,
+                  color: theme.colorScheme.primary,
                   size: 16,
                 ),
               ),
               const SizedBox(width: 8),
-              const Text(
+              Text(
                 'Performance Feedback',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.primaryBlue,
+                  color: theme.colorScheme.primary,
                 ),
               ),
             ],
@@ -462,7 +502,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
                       width: 6,
                       height: 6,
                       decoration: BoxDecoration(
-                        color: AppColors.primaryBlue,
+                        color: theme.colorScheme.primary,
                         shape: BoxShape.circle,
                       ),
                     ),
@@ -470,8 +510,8 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
                     Expanded(
                       child: Text(
                         tip,
-                        style: const TextStyle(
-                          color: AppColors.textPrimary,
+                        style: TextStyle(
+                          color: theme.colorScheme.onSurface,
                           fontSize: 14,
                           height: 1.4,
                         ),
@@ -485,7 +525,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
     );
   }
 
-  Widget _buildActionButtons(ReadingProvider provider) {
+  Widget _buildActionButtons(ReadingProvider provider, ThemeData theme) {
     return Column(
       children: [
         PrimaryButton(
@@ -512,7 +552,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
                 label: const Text('Hear Correct'),
                 style: OutlinedButton.styleFrom(
                   minimumSize: const Size(0, 50),
-                  side: BorderSide(color: AppColors.primaryBlue),
+                  side: BorderSide(color: theme.colorScheme.primary),
                 ),
               ),
             ),
@@ -538,45 +578,6 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
           ],
         ),
       ],
-    );
-  }
-
-  Widget _buildCelebration() {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      margin: const EdgeInsets.only(bottom: 20),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            AppColors.successGreen.withValues(alpha: 0.15),
-            AppColors.primaryBlue.withValues(alpha: 0.08),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.successGreen.withValues(alpha: 0.3)),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          ScaleTransition(
-            scale: _fadeAnimation,
-            child: const Icon(
-              Icons.emoji_events,
-              size: 40,
-              color: AppColors.gold,
-            ),
-          ),
-          const SizedBox(width: 12),
-          const Text(
-            'Excellent Job!',
-            style: TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-              color: AppColors.successGreen,
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

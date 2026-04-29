@@ -159,22 +159,23 @@ class _ReadingScreenState extends State<ReadingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: theme.scaffoldBackgroundColor,
         elevation: 0,
         leading: IconButton(
           onPressed: () => Navigator.of(context).pop(),
           icon: Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: AppColors.primaryBlue.withValues(alpha: 0.1),
+              color: theme.colorScheme.primary.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
-            child: const Icon(
+            child: Icon(
               Icons.arrow_back_ios_new,
-              color: AppColors.primaryBlue,
+              color: theme.colorScheme.primary,
               size: 18,
             ),
           ),
@@ -194,7 +195,7 @@ class _ReadingScreenState extends State<ReadingScreen> {
                 size: 16,
               ),
               const SizedBox(width: 6),
-              const Text(
+              Text(
                 'Reading Test',
                 style: TextStyle(
                   color: AppColors.successGreen,
@@ -264,6 +265,7 @@ class _ReadingScreenState extends State<ReadingScreen> {
   Widget _buildCompactHeader() {
     return Consumer<ReadingProvider>(
       builder: (context, provider, child) {
+        final theme = Theme.of(context);
         final remaining = provider.remainingSeconds;
         final isWarning = remaining <= 5 && remaining > 0;
         
@@ -272,12 +274,12 @@ class _ReadingScreenState extends State<ReadingScreen> {
             duration: const Duration(milliseconds: 300),
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppColors.white,
+              color: theme.cardColor,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: isWarning 
+                color: isWarning
                     ? AppColors.errorRed.withValues(alpha: 0.3)
-                    : AppColors.textSecondary.withValues(alpha: 0.2),
+                    : theme.colorScheme.onSurface.withValues(alpha: 0.2),
               ),
             ),
             child: Column(
@@ -289,7 +291,7 @@ class _ReadingScreenState extends State<ReadingScreen> {
                       children: [
                         Icon(
                           Icons.timer,
-                          color: isWarning ? AppColors.errorRed : AppColors.primaryBlue,
+                          color: isWarning ? AppColors.errorRed : theme.colorScheme.primary,
                           size: 20,
                         ),
                         const SizedBox(width: 8),
@@ -298,35 +300,35 @@ class _ReadingScreenState extends State<ReadingScreen> {
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
-                            color: isWarning ? AppColors.errorRed : AppColors.textPrimary,
+                            color: isWarning ? AppColors.errorRed : theme.colorScheme.onSurface,
                           ),
                         ),
                       ],
                     ),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: AppColors.successGreen.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.circle,
-                            color: AppColors.successGreen,
-                            size: 8,
-                          ),
-                          const SizedBox(width: 6),
-                          const Text(
-                            'Listening...',
-                            style: TextStyle(
+                        decoration: BoxDecoration(
+                          color: AppColors.successGreen.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.circle,
                               color: AppColors.successGreen,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
+                              size: 8,
                             ),
-                          ),
-                        ],
-                      ),
+                            const SizedBox(width: 6),
+                            Text(
+                              'Listening...',
+                              style: TextStyle(
+                                color: AppColors.successGreen,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
                     ),
                   ],
                 ),
@@ -335,9 +337,9 @@ class _ReadingScreenState extends State<ReadingScreen> {
                   borderRadius: BorderRadius.circular(8),
                   child: LinearProgressIndicator(
                     value: remaining / provider.timerDuration,
-                    backgroundColor: AppColors.textSecondary.withValues(alpha: 0.1),
+                    backgroundColor: theme.colorScheme.onSurface.withValues(alpha: 0.1),
                     valueColor: AlwaysStoppedAnimation<Color>(
-                      isWarning ? AppColors.errorRed : AppColors.primaryBlue,
+                      isWarning ? AppColors.errorRed : theme.colorScheme.primary,
                     ),
                     minHeight: 6,
                   ),
@@ -352,34 +354,34 @@ class _ReadingScreenState extends State<ReadingScreen> {
           child: Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppColors.white,
+              color: theme.cardColor,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: AppColors.textSecondary.withValues(alpha: 0.2),
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.2),
               ),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(
-                  Icons.timer_outlined,
-                  color: AppColors.textSecondary,
-                  size: 20,
-                ),
-                const SizedBox(width: 12),
-                Text(
-                  'Reading Time: ${provider.timerDuration} sec',
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                    color: AppColors.textPrimary,
+                  Icon(
+                    Icons.timer_outlined,
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                    size: 20,
                   ),
-                ),
-                const SizedBox(width: 8),
-                Icon(
-                  Icons.arrow_drop_down,
-                  color: AppColors.textSecondary,
-                ),
+                  const SizedBox(width: 12),
+                  Text(
+                    'Reading Time: ${provider.timerDuration} sec',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                      color: theme.colorScheme.onSurface,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Icon(
+                    Icons.arrow_drop_down,
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                  ),
               ],
             ),
           ),
@@ -391,29 +393,30 @@ class _ReadingScreenState extends State<ReadingScreen> {
   Widget _buildLiveTranscript() {
     return Consumer<SpeechProvider>(
       builder: (context, speechProvider, child) {
+        final theme = Theme.of(context);
         final text = speechProvider.partialWords.isNotEmpty 
             ? speechProvider.partialWords 
             : speechProvider.recognizedWords;
         
         if (text.isEmpty) return const SizedBox.shrink();
         
-        return Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: AppColors.white,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: AppColors.primaryBlue.withValues(alpha: 0.2),
-            ),
-          ),
-          child: Text(
-            '"$text"',
-            style: const TextStyle(
-              color: AppColors.textPrimary,
-              fontSize: 14,
-              fontStyle: FontStyle.italic,
-            ),
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: theme.cardColor,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: theme.colorScheme.primary.withValues(alpha: 0.2),
+        ),
+      ),
+      child: Text(
+        '"$text"',
+        style: TextStyle(
+          color: theme.colorScheme.onSurface,
+          fontSize: 14,
+          fontStyle: FontStyle.italic,
+        ),
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
@@ -425,6 +428,7 @@ class _ReadingScreenState extends State<ReadingScreen> {
   Widget _buildMicSection() {
     return Consumer<SpeechProvider>(
       builder: (context, speechProvider, child) {
+        final theme = Theme.of(context);
         final isActive = _isListening;
         
         return Column(
@@ -440,8 +444,8 @@ class _ReadingScreenState extends State<ReadingScreen> {
               child: Text(
                 isActive ? 'Tap to stop' : 'Tap to start',
                 key: ValueKey(isActive),
-                style: const TextStyle(
-                  color: AppColors.textSecondary,
+                style: TextStyle(
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
                 ),
@@ -474,34 +478,35 @@ class _TimerPickerSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final options = [15, 30, 45, 60];
-    
+
     return Container(
       padding: const EdgeInsets.all(20),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      decoration: BoxDecoration(
+        color: theme.cardColor,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Container(
-            width: 40,
-            height: 4,
-            decoration: BoxDecoration(
-              color: AppColors.textSecondary.withValues(alpha: 0.3),
-              borderRadius: BorderRadius.circular(2),
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.3),
+                borderRadius: BorderRadius.circular(2),
+              ),
             ),
-          ),
-          const SizedBox(height: 20),
-          const Text(
-            'Select Reading Time',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              color: AppColors.textPrimary,
+            const SizedBox(height: 20),
+            Text(
+              'Select Reading Time',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: theme.colorScheme.onSurface,
+              ),
             ),
-          ),
           const SizedBox(height: 20),
           ...options.map((duration) => Padding(
             padding: const EdgeInsets.only(bottom: 12),
@@ -511,14 +516,14 @@ class _TimerPickerSheet extends StatelessWidget {
                 width: double.infinity,
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: duration == currentDuration 
-                      ? AppColors.primaryBlue.withValues(alpha: 0.1)
-                      : AppColors.background,
+                  color: duration == currentDuration
+                      ? theme.colorScheme.primary.withValues(alpha: 0.1)
+                      : theme.scaffoldBackgroundColor,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: duration == currentDuration 
-                        ? AppColors.primaryBlue
-                        : AppColors.textSecondary.withValues(alpha: 0.2),
+                    color: duration == currentDuration
+                        ? theme.colorScheme.primary
+                        : theme.colorScheme.onSurface.withValues(alpha: 0.2),
                   ),
                 ),
                 child: Row(
@@ -526,9 +531,9 @@ class _TimerPickerSheet extends StatelessWidget {
                   children: [
                     Icon(
                       Icons.timer,
-                      color: duration == currentDuration 
-                          ? AppColors.primaryBlue 
-                          : AppColors.textSecondary,
+                      color: duration == currentDuration
+                          ? theme.colorScheme.primary
+                          : theme.colorScheme.onSurface.withValues(alpha: 0.6),
                     ),
                     const SizedBox(width: 12),
                     Text(
@@ -536,9 +541,9 @@ class _TimerPickerSheet extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
-                        color: duration == currentDuration 
-                            ? AppColors.primaryBlue 
-                            : AppColors.textPrimary,
+                        color: duration == currentDuration
+                            ? theme.colorScheme.primary
+                            : theme.colorScheme.onSurface,
                       ),
                     ),
                   ],

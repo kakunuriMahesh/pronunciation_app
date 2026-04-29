@@ -13,10 +13,11 @@ class ResultScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: theme.scaffoldBackgroundColor,
         elevation: 0,
         leading: IconButton(
           onPressed: () {
@@ -28,10 +29,10 @@ class ResultScreen extends StatelessWidget {
             color: AppColors.textPrimary,
           ),
         ),
-        title: const Text(
+        title: Text(
           'Results',
           style: TextStyle(
-            color: AppColors.textPrimary,
+            color: theme.colorScheme.onSurface,
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -52,14 +53,14 @@ class ResultScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  _buildScoreCircle(result.score),
+                  _buildScoreCircle(result.score, theme),
                   const SizedBox(height: 24),
                   _buildScoreCards(result.correctCount, result.missedCount,
-                      result.wrongCount),
+                      result.wrongCount, theme),
                   const SizedBox(height: 24),
-                  _buildStatsRow(result.wpm, result.fluencyText),
+                  _buildStatsRow(result.wpm, result.fluencyText, theme),
                   const SizedBox(height: 24),
-                  _buildMatchesList(result.wordMatches),
+                  _buildMatchesList(result.wordMatches, theme),
                   const SizedBox(height: 24),
                   PrimaryButton(
                     text: 'Practice Again',
@@ -91,7 +92,7 @@ class ResultScreen extends StatelessWidget {
                     label: const Text('Unlock AI Pro Analysis'),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: AppColors.warningOrange,
-                      side: const BorderSide(
+                      side: BorderSide(
                         color: AppColors.warningOrange,
                         width: 1.5,
                       ),
@@ -107,7 +108,7 @@ class ResultScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildScoreCircle(double score) {
+  Widget _buildScoreCircle(double score, ThemeData theme) {
     Color scoreColor;
     if (score >= 80) {
       scoreColor = AppColors.successGreen;
@@ -122,7 +123,7 @@ class ResultScreen extends StatelessWidget {
       height: 160,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: AppColors.white,
+        color: theme.cardColor,
         boxShadow: [
           BoxShadow(
             color: scoreColor.withValues(alpha: 0.3),
@@ -142,11 +143,11 @@ class ResultScreen extends StatelessWidget {
               color: scoreColor,
             ),
           ),
-          const Text(
+          Text(
             'Score',
             style: TextStyle(
               fontSize: 16,
-              color: AppColors.textSecondary,
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
             ),
           ),
         ],
@@ -154,7 +155,7 @@ class ResultScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildScoreCards(int correct, int missed, int wrong) {
+  Widget _buildScoreCards(int correct, int missed, int wrong, ThemeData theme) {
     return Row(
       children: [
         Expanded(
@@ -187,11 +188,11 @@ class ResultScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildStatsRow(double wpm, String fluency) {
+  Widget _buildStatsRow(double wpm, String fluency, ThemeData theme) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: theme.cardColor,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
@@ -208,17 +209,17 @@ class ResultScreen extends StatelessWidget {
             children: [
               Text(
                 wpm.toStringAsFixed(0),
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.primaryBlue,
+                  color: theme.colorScheme.primary,
                 ),
               ),
-              const Text(
+              Text(
                 'WPM',
                 style: TextStyle(
                   fontSize: 12,
-                  color: AppColors.textSecondary,
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                 ),
               ),
             ],
@@ -226,23 +227,23 @@ class ResultScreen extends StatelessWidget {
           Container(
             width: 1,
             height: 40,
-            color: AppColors.textSecondary.withValues(alpha: 0.2),
+            color: theme.colorScheme.onSurface.withValues(alpha: 0.2),
           ),
           Column(
             children: [
               Text(
                 fluency,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.primaryBlue,
+                  color: theme.colorScheme.primary,
                 ),
               ),
-              const Text(
+              Text(
                 'Fluency',
                 style: TextStyle(
                   fontSize: 12,
-                  color: AppColors.textSecondary,
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                 ),
               ),
             ],
@@ -252,7 +253,7 @@ class ResultScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildMatchesList(List<WordMatch> matches) {
+  Widget _buildMatchesList(List<WordMatch> matches, ThemeData theme) {
     final wrongMatches = matches
         .where((m) => m.status != WordMatchStatus.correct && m.expectedWord.isNotEmpty)
         .toList();
@@ -265,11 +266,11 @@ class ResultScreen extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: AppColors.successGreen.withValues(alpha: 0.3)),
         ),
-        child: const Row(
+        child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.check_circle, color: AppColors.successGreen),
-            SizedBox(width: 8),
+            const Icon(Icons.check_circle, color: AppColors.successGreen),
+            const SizedBox(width: 8),
             Text(
               'Perfect! All words correct.',
               style: TextStyle(
@@ -285,12 +286,12 @@ class ResultScreen extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Expected vs Heard',
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w600,
-            color: AppColors.textPrimary,
+            color: theme.colorScheme.onSurface,
           ),
         ),
         const SizedBox(height: 12),

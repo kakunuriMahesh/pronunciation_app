@@ -9,6 +9,8 @@ class ReadingProvider extends ChangeNotifier {
   final TtsService _ttsService = TtsService();
   final ComparisonService _comparisonService = ComparisonService();
 
+  TtsService get ttsService => _ttsService;
+
   String _currentText = AppConstants.defaultReadingText;
   ReadingResult? _result;
   List<WordMatch> _liveMatches = [];
@@ -302,6 +304,11 @@ class ReadingProvider extends ChangeNotifier {
   Future<void> setSpeechRate(double rate) async {
     _speechRate = rate;
     await _ttsService.setSpeechRate(rate);
+    notifyListeners();
+  }
+
+  Future<void> setVoiceGender(String gender) async {
+    await _ttsService.setVoiceGender(gender);
     notifyListeners();
   }
 

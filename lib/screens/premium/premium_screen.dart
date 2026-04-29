@@ -7,22 +7,23 @@ class PremiumScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: theme.scaffoldBackgroundColor,
         elevation: 0,
         leading: IconButton(
           onPressed: () => Navigator.of(context).pop(),
-          icon: const Icon(
+          icon: Icon(
             Icons.arrow_back_ios,
-            color: AppColors.textPrimary,
+            color: theme.colorScheme.onSurface,
           ),
         ),
-        title: const Text(
+        title: Text(
           'AI Pro',
           style: TextStyle(
-            color: AppColors.textPrimary,
+            color: theme.colorScheme.onSurface,
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -38,7 +39,7 @@ class PremiumScreen extends StatelessWidget {
                 width: 120,
                 height: 120,
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(
+                  gradient: LinearGradient(
                     colors: [AppColors.primaryBlue, AppColors.primaryBlueDark],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
@@ -52,27 +53,27 @@ class PremiumScreen extends StatelessWidget {
                     ),
                   ],
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.psychology,
                   size: 60,
-                  color: AppColors.white,
+                  color: theme.colorScheme.onPrimary,
                 ),
               ),
               const SizedBox(height: 24),
-              const Text(
+              Text(
                 'AI Pro Analysis',
                 style: TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
+                  color: theme.colorScheme.onSurface,
                 ),
               ),
               const SizedBox(height: 8),
-              const Text(
+              Text(
                 'Advanced pronunciation coaching powered by AI',
                 style: TextStyle(
                   fontSize: 16,
-                  color: AppColors.textSecondary,
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -81,37 +82,43 @@ class PremiumScreen extends StatelessWidget {
                 Icons.mic,
                 'Better Speech Accuracy',
                 '99% accuracy with advanced speech recognition',
+                theme,
               ),
               _buildFeatureItem(
                 Icons.error_outline,
                 'Pronunciation Mistakes',
                 'Detect and fix TH, R, V sound mistakes',
+                theme,
               ),
               _buildFeatureItem(
                 Icons.school,
                 'Accent Improvement',
                 'Personalized accent coaching',
+                theme,
               ),
               _buildFeatureItem(
                 Icons.analytics,
                 'Advanced Reports',
                 'Detailed progress tracking',
+                theme,
               ),
               _buildFeatureItem(
                 Icons.record_voice_over,
                 'Phoneme Analysis',
                 'Word-by-word pronunciation breakdown',
+                theme,
               ),
               _buildFeatureItem(
                 Icons.insights,
                 'Smart Feedback',
                 'AI-powered personalized suggestions',
+                theme,
               ),
               const SizedBox(height: 32),
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: AppColors.white,
+                  color: theme.cardColor,
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
@@ -123,20 +130,20 @@ class PremiumScreen extends StatelessWidget {
                 ),
                 child: Column(
                   children: [
-                    const Text(
+                    Text(
                       'Coming Soon',
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
-                        color: AppColors.textPrimary,
+                        color: theme.colorScheme.onSurface,
                       ),
                     ),
                     const SizedBox(height: 8),
-                    const Text(
+                    Text(
                       'Join the waitlist to be notified when AI Pro launches',
                       style: TextStyle(
                         fontSize: 14,
-                        color: AppColors.textSecondary,
+                        color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                       ),
                       textAlign: TextAlign.center,
                     ),
@@ -167,13 +174,13 @@ class PremiumScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildFeatureItem(IconData icon, String title, String description) {
+  Widget _buildFeatureItem(IconData icon, String title, String description, ThemeData theme) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: AppColors.white,
+          color: theme.cardColor,
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
@@ -189,12 +196,12 @@ class PremiumScreen extends StatelessWidget {
               width: 46,
               height: 46,
               decoration: BoxDecoration(
-                color: AppColors.primaryBlue.withValues(alpha: 0.1),
+                color: theme.colorScheme.primary.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(
                 icon,
-                color: AppColors.primaryBlue,
+                color: theme.colorScheme.primary,
                 size: 24,
               ),
             ),
@@ -205,18 +212,18 @@ class PremiumScreen extends StatelessWidget {
                 children: [
                   Text(
                     title,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.textPrimary,
+                      color: theme.colorScheme.onSurface,
                     ),
                   ),
                   const SizedBox(height: 2),
                   Text(
                     description,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 13,
-                      color: AppColors.textSecondary,
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                     ),
                   ),
                 ],

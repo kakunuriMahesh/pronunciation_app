@@ -15,13 +15,14 @@ class LiveStatsHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final total = correct + wrong + remaining;
     final progress = total > 0 ? correct / total : 0.0;
 
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: theme.cardColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -44,23 +45,23 @@ class LiveStatsHeader extends StatelessWidget {
               Container(
                 width: 1,
                 height: 40,
-                color: AppColors.textSecondary.withValues(alpha: 0.2),
-              ),
-              _StatItem(
-                label: 'Wrong',
-                value: wrong.toString(),
-                color: AppColors.errorRed,
-                icon: Icons.cancel_outlined,
-              ),
-              Container(
-                width: 1,
-                height: 40,
-                color: AppColors.textSecondary.withValues(alpha: 0.2),
-              ),
-              _StatItem(
-                label: 'Left',
-                value: remaining.toString(),
-                color: AppColors.textSecondary,
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.2),
+               ),
+               _StatItem(
+                 label: 'Wrong',
+                 value: wrong.toString(),
+                 color: AppColors.errorRed,
+                 icon: Icons.cancel_outlined,
+               ),
+               Container(
+                 width: 1,
+                 height: 40,
+                 color: theme.colorScheme.onSurface.withValues(alpha: 0.2),
+               ),
+               _StatItem(
+                 label: 'Left',
+                 value: remaining.toString(),
+                 color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                 icon: Icons.hourglass_empty,
               ),
             ],
@@ -70,25 +71,25 @@ class LiveStatsHeader extends StatelessWidget {
             borderRadius: BorderRadius.circular(8),
             child: LinearProgressIndicator(
               value: progress,
-              backgroundColor: AppColors.textSecondary.withValues(alpha: 0.1),
-              valueColor: AlwaysStoppedAnimation<Color>(
-                progress >= 0.8
-                    ? AppColors.successGreen
-                    : progress >= 0.5
-                        ? AppColors.warningOrange
-                        : AppColors.primaryBlue,
-              ),
+              backgroundColor: theme.colorScheme.onSurface.withValues(alpha: 0.1),
+               valueColor: AlwaysStoppedAnimation<Color>(
+                 progress >= 0.8
+                     ? AppColors.successGreen
+                     : progress >= 0.5
+                         ? AppColors.warningOrange
+                         : AppColors.primaryBlue,
+               ),
               minHeight: 8,
             ),
           ),
           const SizedBox(height: 8),
           Text(
             '${(progress * 100).toInt()}% Complete',
-            style: TextStyle(
-              color: AppColors.textSecondary,
-              fontSize: 13,
-              fontWeight: FontWeight.w500,
-            ),
+             style: TextStyle(
+               color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+               fontSize: 13,
+               fontWeight: FontWeight.w500,
+             ),
           ),
         ],
       ),

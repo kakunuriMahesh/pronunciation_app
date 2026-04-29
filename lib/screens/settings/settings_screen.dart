@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/constants/app_constants.dart';
 import '../../providers/reading_provider.dart';
+import '../../providers/theme_provider.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -14,25 +15,43 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   bool _isDarkMode = false;
   double _speechRate = AppConstants.defaultSpeechRate;
+  String _selectedGender = 'female';
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final provider = context.read<ReadingProvider>();
+      final ttsService = provider.ttsService;
+      final themeProvider = context.read<ThemeProvider>();
+      
+      setState(() {
+        _speechRate = provider.speechRate;
+        _selectedGender = ttsService.selectedGender;
+        _isDarkMode = themeProvider.themeMode == ThemeMode.dark;
+      });
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: theme.scaffoldBackgroundColor,
         elevation: 0,
         leading: IconButton(
           onPressed: () => Navigator.of(context).pop(),
-          icon: const Icon(
+          icon: Icon(
             Icons.arrow_back_ios,
-            color: AppColors.textPrimary,
+            color: theme.colorScheme.onSurface,
           ),
         ),
-        title: const Text(
+        title: Text(
           'Settings',
           style: TextStyle(
-            color: AppColors.textPrimary,
+            color: theme.colorScheme.onSurface,
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -50,30 +69,36 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Row(
+                    Row(
                       children: [
                         Icon(
                           Icons.dark_mode_outlined,
-                          color: AppColors.textPrimary,
+                          color: theme.colorScheme.onSurface,
                         ),
-                        SizedBox(width: 12),
+                        const SizedBox(width: 12),
                         Text(
                           'Dark Mode',
                           style: TextStyle(
                             fontSize: 16,
-                            color: AppColors.textPrimary,
+                            color: theme.colorScheme.onSurface,
                           ),
                         ),
                       ],
                     ),
                     Switch(
                       value: _isDarkMode,
-                      onChanged: (value) {
+                      onChanged: (value) async {
                         setState(() {
                           _isDarkMode = value;
                         });
+                        final themeProvider = context.read<ThemeProvider>();
+                        if (value) {
+                          await themeProvider.setThemeMode(ThemeMode.dark);
+                        } else {
+                          await themeProvider.setThemeMode(ThemeMode.light);
+                        }
                       },
-                      activeTrackColor: AppColors.primaryBlue,
+                      activeTrackColor: theme.colorScheme.primary,
                     ),
                   ],
                 ),
@@ -87,16 +112,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   children: [
                     Row(
                       children: [
-                        const Icon(
+                        Icon(
                           Icons.speed,
-                          color: AppColors.textPrimary,
+                          color: theme.colorScheme.onSurface,
                         ),
                         const SizedBox(width: 12),
                         Text(
                           'Speech Speed',
                           style: TextStyle(
                             fontSize: 16,
-                            color: AppColors.textPrimary,
+                            color: theme.colorScheme.onSurface,
                           ),
                         ),
                       ],
@@ -104,11 +129,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     const SizedBox(height: 16),
                     Row(
                       children: [
-                        const Text(
+                        Text(
                           'Slow',
                           style: TextStyle(
                             fontSize: 12,
-                            color: AppColors.textSecondary,
+                            color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                           ),
                         ),
                         Expanded(
@@ -117,24 +142,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             min: 0.1,
                             max: 1.0,
                             divisions: 9,
-                            activeColor: AppColors.primaryBlue,
-                            inactiveColor:
-                                AppColors.primaryBlue.withValues(alpha: 0.2),
+                            activeColor: theme.colorScheme.primary,
+                            inactiveColor: theme.colorScheme.primary.withValues(alpha: 0.2),
                             onChanged: (value) {
                               setState(() {
                                 _speechRate = value;
                               });
-                              context
-                                  .read<ReadingProvider>()
-                                  .setSpeechRate(value);
+                              context.read<ReadingProvider>().setSpeechRate(value);
                             },
                           ),
                         ),
-                        const Text(
+                        Text(
                           'Fast',
                           style: TextStyle(
                             fontSize: 12,
-                            color: AppColors.textSecondary,
+                            color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                           ),
                         ),
                       ],
@@ -142,10 +164,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     Center(
                       child: Text(
                         'Current: ${(_speechRate * 100).toInt()}%',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
-                          color: AppColors.primaryBlue,
+                          color: theme.colorScheme.primary,
                         ),
                       ),
                     ),
@@ -161,16 +183,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   children: [
                     Row(
                       children: [
-                        const Icon(
+                        Icon(
                           Icons.record_voice_over,
-                          color: AppColors.textPrimary,
+                          color: theme.colorScheme.onSurface,
                         ),
                         const SizedBox(width: 12),
                         Text(
                           'Voice',
                           style: TextStyle(
                             fontSize: 16,
-                            color: AppColors.textPrimary,
+                            color: theme.colorScheme.onSurface,
                           ),
                         ),
                       ],
@@ -178,30 +200,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     const SizedBox(height: 12),
                     Row(
                       children: [
-                        _buildVoiceOption('Female', 'en-US', true),
+                        _buildVoiceOption('Female', 'female'),
                         const SizedBox(width: 12),
-                        _buildVoiceOption('Male', 'en-US', false),
+                        _buildVoiceOption('Male', 'male'),
                       ],
                     ),
                   ],
                 ),
-              ),
-              const SizedBox(height: 24),
-              _buildSectionTitle('Accent (Premium)'),
-              const SizedBox(height: 12),
-              _buildPremiumSection(
-                title: 'American Accent',
-                subtitle: 'Master the American pronunciation',
-              ),
-              const SizedBox(height: 8),
-              _buildPremiumSection(
-                title: 'British Accent',
-                subtitle: 'Learn British English pronunciation',
-              ),
-              const SizedBox(height: 8),
-              _buildPremiumSection(
-                title: 'Daily Challenges',
-                subtitle: 'Stay motivated with daily goals',
               ),
               const SizedBox(height: 24),
               _buildSectionTitle('About'),
@@ -229,18 +234,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         children: [
                           Text(
                             AppConstants.privacyNote,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w500,
-                              color: AppColors.textPrimary,
+                              color: theme.colorScheme.onSurface,
                             ),
                           ),
                           const SizedBox(height: 2),
-                          const Text(
+                          Text(
                             'Your voice data is processed on-device and never stored',
                             style: TextStyle(
                               fontSize: 13,
-                              color: AppColors.textSecondary,
+                              color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                             ),
                           ),
                         ],
@@ -255,18 +260,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   children: [
                     Text(
                       AppConstants.appName,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
-                        color: AppColors.textPrimary,
+                        color: theme.colorScheme.onSurface,
                       ),
                     ),
                     const SizedBox(height: 4),
-                    const Text(
+                    Text(
                       'Version 1.0.0',
                       style: TextStyle(
                         fontSize: 14,
-                        color: AppColors.textSecondary,
+                        color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                       ),
                     ),
                   ],
@@ -281,21 +286,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Widget _buildSectionTitle(String title) {
+    final theme = Theme.of(context);
     return Text(
       title,
-      style: const TextStyle(
+      style: TextStyle(
         fontSize: 14,
         fontWeight: FontWeight.w600,
-        color: AppColors.textSecondary,
+        color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
       ),
     );
   }
 
   Widget _buildSettingCard({required Widget child}) {
+    final theme = Theme.of(context);
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: theme.cardColor,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
@@ -309,21 +316,32 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Widget _buildVoiceOption(String label, String locale, bool isSelected) {
+  Widget _buildVoiceOption(String label, String gender) {
+    final theme = Theme.of(context);
+    final isSelected = _selectedGender == gender;
+
     return Expanded(
       child: GestureDetector(
-        onTap: () {},
+        onTap: () {
+          setState(() {
+            _selectedGender = gender;
+          });
+          final provider = context.read<ReadingProvider>();
+          provider.setVoiceGender(gender).then((_) {
+            provider.ttsService.speak('Hi, I\'m here to assist you!');
+          });
+        },
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 12),
           decoration: BoxDecoration(
             color: isSelected
-                ? AppColors.primaryBlue.withValues(alpha: 0.1)
-                : AppColors.background,
+                ? theme.colorScheme.primary.withValues(alpha: 0.1)
+                : theme.scaffoldBackgroundColor,
             borderRadius: BorderRadius.circular(10),
             border: Border.all(
               color: isSelected
-                  ? AppColors.primaryBlue
-                  : AppColors.textSecondary.withValues(alpha: 0.3),
+                  ? theme.colorScheme.primary
+                  : theme.colorScheme.onSurface.withValues(alpha: 0.3),
             ),
           ),
           child: Center(
@@ -331,10 +349,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(
-                  label == 'Female' ? Icons.woman : Icons.man,
+                  gender == 'female' ? Icons.woman : Icons.man,
                   color: isSelected
-                      ? AppColors.primaryBlue
-                      : AppColors.textSecondary,
+                      ? theme.colorScheme.primary
+                      : theme.colorScheme.onSurface.withValues(alpha: 0.6),
                   size: 18,
                 ),
                 const SizedBox(width: 6),
@@ -342,8 +360,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   label,
                   style: TextStyle(
                     color: isSelected
-                        ? AppColors.primaryBlue
-                        : AppColors.textSecondary,
+                        ? theme.colorScheme.primary
+                        : theme.colorScheme.onSurface.withValues(alpha: 0.6),
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -351,73 +369,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildPremiumSection({required String title, required String subtitle}) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.background,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: AppColors.textSecondary.withValues(alpha: 0.2),
-        ),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: AppColors.premiumPurple.withValues(alpha: 0.1),
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(
-              Icons.lock,
-              color: AppColors.premiumPurple,
-              size: 16,
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textPrimary,
-                  ),
-                ),
-                Text(
-                  subtitle,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            decoration: BoxDecoration(
-              color: AppColors.premiumPurple.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Text(
-              'PRO',
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.bold,
-                color: AppColors.premiumPurple,
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }
