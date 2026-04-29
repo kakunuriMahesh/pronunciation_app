@@ -528,7 +528,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
                   );
                 },
                 icon: const Icon(Icons.skip_next, size: 18),
-                label: const Text('Next Sentence'),
+                label: const Text('Next'),
                 style: OutlinedButton.styleFrom(
                   minimumSize: const Size(0, 50),
                   side: BorderSide(color: AppColors.successGreen),
