@@ -7,7 +7,6 @@ import '../../providers/reading_provider.dart';
 import '../../widgets/reading_text_view.dart';
 import '../../widgets/mic_button.dart';
 import '../../widgets/primary_button.dart';
-import '../../widgets/live_stats_card.dart';
 import '../analytics/analytics_screen.dart';
 
 class ReadingScreen extends StatefulWidget {
@@ -19,7 +18,9 @@ class ReadingScreen extends StatefulWidget {
 
 class _ReadingScreenState extends State<ReadingScreen> {
   Timer? _timer;
+  Timer? _silenceTimer;
   bool _isListening = false;
+  bool _hasNavigated = false;
 
   @override
   void initState() {
@@ -32,18 +33,32 @@ class _ReadingScreenState extends State<ReadingScreen> {
   @override
   void dispose() {
     _timer?.cancel();
+    _silenceTimer?.cancel();
     super.dispose();
   }
 
   void _startTimer() {
     _timer?.cancel();
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!mounted) return;
       final provider = context.read<ReadingProvider>();
       if (provider.isTimerActive) {
         provider.updateTimerTick();
         
-        if (provider.remainingSeconds <= 0) {
-          _stopTimerAndNavigate();
+        if (provider.remainingSeconds <= 0 && !_hasNavigated) {
+          _stopTimerAndNavigate(reason: 'Timer expired');
+        }
+      }
+    });
+  }
+
+  void _startSilenceTimer() {
+    _silenceTimer?.cancel();
+    _silenceTimer = Timer(const Duration(seconds: 3), () {
+      if (_isListening && mounted && !_hasNavigated) {
+        final speechProvider = context.read<SpeechProvider>();
+        if (speechProvider.hasCapturedSpeech) {
+          _stopTimerAndNavigate(reason: 'Silence detected');
         }
       }
     });
@@ -52,37 +67,47 @@ class _ReadingScreenState extends State<ReadingScreen> {
   void _stopTimer() {
     _timer?.cancel();
     _timer = null;
+    _silenceTimer?.cancel();
+    _silenceTimer = null;
   }
 
   void _startListening() {
     final speechProvider = context.read<SpeechProvider>();
     final readingProvider = context.read<ReadingProvider>();
 
+    _hasNavigated = false;
     readingProvider.startRecording();
     _startTimer();
     setState(() => _isListening = true);
 
     speechProvider.startListening(
-      onResult: (words) {
+      onFinalResult: (words) {
+        if (!mounted || _hasNavigated) return;
+        
         if (words.isNotEmpty) {
           readingProvider.updateLiveRecognized(words);
-        }
-      },
-      onListeningStopped: () {
-        if (mounted) {
-          _stopTimerAndNavigate();
+          final completed = readingProvider.updateLiveRecognized(words);
+          if (completed) {
+            _stopTimerAndNavigate(reason: 'Sentence completed');
+          }
         }
       },
     );
+
+    _startSilenceTimer();
   }
 
   void _stopListening() async {
+    if (_hasNavigated) return;
     final speechProvider = context.read<SpeechProvider>();
     await speechProvider.stopListening();
-    _stopTimerAndNavigate();
+    _stopTimerAndNavigate(reason: 'Manual stop');
   }
 
-  void _stopTimerAndNavigate() {
+  void _stopTimerAndNavigate({String reason = ''}) {
+    if (_hasNavigated) return;
+    _hasNavigated = true;
+    
     _stopTimer();
     final speechProvider = context.read<SpeechProvider>();
     final readingProvider = context.read<ReadingProvider>();
@@ -90,8 +115,12 @@ class _ReadingScreenState extends State<ReadingScreen> {
     readingProvider.stopTimer();
     setState(() => _isListening = false);
 
-    if (speechProvider.recognizedWords.isNotEmpty) {
-      readingProvider.processResult(speechProvider.recognizedWords);
+    final words = speechProvider.recognizedWords.isNotEmpty 
+        ? speechProvider.recognizedWords 
+        : speechProvider.partialWords;
+
+    if (words.isNotEmpty && words.trim().isNotEmpty) {
+      readingProvider.processResult(words);
 
       if (mounted) {
         Navigator.of(context).push(
@@ -101,7 +130,7 @@ class _ReadingScreenState extends State<ReadingScreen> {
         );
       }
     } else {
-      if (mounted) {
+      if (mounted && speechProvider.isSessionLongEnough && speechProvider.hasCapturedSpeech) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: const Text('No speech detected. Please try again.'),
@@ -110,9 +139,8 @@ class _ReadingScreenState extends State<ReadingScreen> {
           ),
         );
       }
+      speechProvider.reset();
     }
-
-    speechProvider.reset();
   }
 
   void _showTimerPicker() {
@@ -157,7 +185,7 @@ class _ReadingScreenState extends State<ReadingScreen> {
             color: AppColors.successGreen.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(20),
           ),
-          child: const Row(
+          child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(
@@ -165,9 +193,9 @@ class _ReadingScreenState extends State<ReadingScreen> {
                 color: AppColors.successGreen,
                 size: 16,
               ),
-              SizedBox(width: 6),
-              Text(
-                'Free Mode',
+              const SizedBox(width: 6),
+              const Text(
+                'Reading Test',
                 style: TextStyle(
                   color: AppColors.successGreen,
                   fontWeight: FontWeight.w600,
@@ -186,19 +214,7 @@ class _ReadingScreenState extends State<ReadingScreen> {
             children: [
               const SizedBox(height: 20),
               
-              _buildTimerSection(),
-              
-              const SizedBox(height: 20),
-              
-              Consumer<ReadingProvider>(
-                builder: (context, provider, child) {
-                  return LiveStatsHeader(
-                    correct: provider.correctCount,
-                    wrong: provider.wrongCount,
-                    remaining: provider.remainingCount,
-                  );
-                },
-              ),
+              _buildCompactHeader(),
               
               const SizedBox(height: 20),
               
@@ -217,14 +233,7 @@ class _ReadingScreenState extends State<ReadingScreen> {
               
               const SizedBox(height: 16),
               
-              Consumer<SpeechProvider>(
-                builder: (context, speechProvider, child) {
-                  if (speechProvider.recognizedWords.isNotEmpty) {
-                    return _buildSpokenSentenceCard(speechProvider.recognizedWords);
-                  }
-                  return const SizedBox.shrink();
-                },
-              ),
+              if (_isListening) _buildLiveTranscript(),
               
               const Spacer(),
               
@@ -232,8 +241,8 @@ class _ReadingScreenState extends State<ReadingScreen> {
               
               const SizedBox(height: 24),
               
-              Consumer2<SpeechProvider, ReadingProvider>(
-                builder: (context, speechProvider, readingProvider, child) {
+              Consumer<ReadingProvider>(
+                builder: (context, readingProvider, child) {
                   return PrimaryButton(
                     text: 'Hear Correct',
                     icon: Icons.volume_up,
@@ -252,7 +261,7 @@ class _ReadingScreenState extends State<ReadingScreen> {
     );
   }
 
-  Widget _buildTimerSection() {
+  Widget _buildCompactHeader() {
     return Consumer<ReadingProvider>(
       builder: (context, provider, child) {
         final remaining = provider.remainingSeconds;
@@ -261,11 +270,9 @@ class _ReadingScreenState extends State<ReadingScreen> {
         if (_isListening) {
           return AnimatedContainer(
             duration: const Duration(milliseconds: 300),
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: isWarning 
-                  ? AppColors.errorRed.withValues(alpha: 0.1)
-                  : AppColors.white,
+              color: AppColors.white,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
                 color: isWarning 
@@ -273,32 +280,66 @@ class _ReadingScreenState extends State<ReadingScreen> {
                     : AppColors.textSecondary.withValues(alpha: 0.2),
               ),
             ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+            child: Column(
               children: [
-                Icon(
-                  Icons.timer,
-                  color: isWarning ? AppColors.errorRed : AppColors.primaryBlue,
-                  size: 24,
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.timer,
+                          color: isWarning ? AppColors.errorRed : AppColors.primaryBlue,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Time Left: ${_formatTime(remaining)}',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: isWarning ? AppColors.errorRed : AppColors.textPrimary,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: AppColors.successGreen.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.circle,
+                            color: AppColors.successGreen,
+                            size: 8,
+                          ),
+                          const SizedBox(width: 6),
+                          const Text(
+                            'Listening...',
+                            style: TextStyle(
+                              color: AppColors.successGreen,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 12),
-                AnimatedDefaultTextStyle(
-                  duration: const Duration(milliseconds: 300),
-                  style: TextStyle(
-                    fontSize: isWarning ? 28 : 24,
-                    fontWeight: FontWeight.bold,
-                    color: isWarning ? AppColors.errorRed : AppColors.textPrimary,
-                  ),
-                  child: Text(
-                    _formatTime(remaining),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  'remaining',
-                  style: TextStyle(
-                    color: AppColors.textSecondary,
-                    fontSize: 14,
+                const SizedBox(height: 12),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: LinearProgressIndicator(
+                    value: remaining / provider.timerDuration,
+                    backgroundColor: AppColors.textSecondary.withValues(alpha: 0.1),
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      isWarning ? AppColors.errorRed : AppColors.primaryBlue,
+                    ),
+                    minHeight: 6,
                   ),
                 ),
               ],
@@ -309,7 +350,7 @@ class _ReadingScreenState extends State<ReadingScreen> {
         return GestureDetector(
           onTap: _showTimerPicker,
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: AppColors.white,
               borderRadius: BorderRadius.circular(16),
@@ -347,69 +388,50 @@ class _ReadingScreenState extends State<ReadingScreen> {
     );
   }
 
-  Widget _buildSpokenSentenceCard(String text) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: AppColors.primaryBlue.withValues(alpha: 0.2),
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  color: AppColors.primaryBlue.withValues(alpha: 0.1),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.record_voice_over,
-                  color: AppColors.primaryBlue,
-                  size: 16,
-                ),
-              ),
-              const SizedBox(width: 10),
-              const Text(
-                'You said:',
-                style: TextStyle(
-                  color: AppColors.textSecondary,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
+  Widget _buildLiveTranscript() {
+    return Consumer<SpeechProvider>(
+      builder: (context, speechProvider, child) {
+        final text = speechProvider.partialWords.isNotEmpty 
+            ? speechProvider.partialWords 
+            : speechProvider.recognizedWords;
+        
+        if (text.isEmpty) return const SizedBox.shrink();
+        
+        return Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: AppColors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: AppColors.primaryBlue.withValues(alpha: 0.2),
+            ),
           ),
-          const SizedBox(height: 10),
-          Text(
+          child: Text(
             '"$text"',
             style: const TextStyle(
               color: AppColors.textPrimary,
-              fontSize: 17,
-              height: 1.4,
+              fontSize: 14,
+              fontStyle: FontStyle.italic,
             ),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 
   Widget _buildMicSection() {
     return Consumer<SpeechProvider>(
       builder: (context, speechProvider, child) {
-        final isActive = _isListening || speechProvider.isListening;
+        final isActive = _isListening;
         
         return Column(
           children: [
             MicButton(
               isListening: isActive,
-              onPressed: _startListening,
+              onPressed: _isListening ? _stopListening : _startListening,
               onStopPressed: _stopListening,
             ),
             const SizedBox(height: 12),
@@ -437,7 +459,7 @@ class _ReadingScreenState extends State<ReadingScreen> {
     if (mins > 0) {
       return '$mins:${secs.toString().padLeft(2, '0')}';
     }
-    return '00:${secs.toString().padLeft(2, '0')}';
+    return '${secs}s';
   }
 }
 

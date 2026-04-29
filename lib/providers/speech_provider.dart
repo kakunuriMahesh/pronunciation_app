@@ -14,32 +14,36 @@ class SpeechProvider extends ChangeNotifier {
   
   SpeechState _state = SpeechState.idle;
   String _recognizedWords = '';
+  String _partialWords = '';
   String _errorMessage = '';
   bool _isAvailable = false;
+  DateTime? _sessionStartTime;
+  bool _hasCapturedSpeech = false;
 
   SpeechState get state => _state;
   String get recognizedWords => _recognizedWords;
+  String get partialWords => _partialWords;
   String get errorMessage => _errorMessage;
   bool get isAvailable => _isAvailable;
   bool get isListening => _state == SpeechState.listening;
+  bool get hasCapturedSpeech => _hasCapturedSpeech;
+  DateTime? get sessionStartTime => _sessionStartTime;
 
   Future<void> checkAvailability() async {
     _speechService.setCallbacks(
       onStatusChanged: (status) {
-        if (status == 'done' || status == 'notListening' || status == 'ready') {
-          if (_state == SpeechState.listening) {
-            if (_recognizedWords.isNotEmpty) {
-              _state = SpeechState.completed;
-            } else {
-              _state = SpeechState.idle;
-            }
-            notifyListeners();
-          }
-        }
+        // Only handle fatal status changes, not normal pauses
       },
       onError: (error) {
         _state = SpeechState.error;
         _errorMessage = error;
+        notifyListeners();
+      },
+      onPartialResult: (words) {
+        _partialWords = words;
+        if (!_hasCapturedSpeech && words.isNotEmpty) {
+          _hasCapturedSpeech = true;
+        }
         notifyListeners();
       },
     );
@@ -48,31 +52,47 @@ class SpeechProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> startListening({required Function(String) onResult, Function()? onListeningStopped}) async {
+  Future<bool> startListening({required Function(String) onFinalResult}) async {
     _state = SpeechState.listening;
     _recognizedWords = '';
+    _partialWords = '';
     _errorMessage = '';
+    _hasCapturedSpeech = false;
+    _sessionStartTime = DateTime.now();
     notifyListeners();
 
     final success = await _speechService.startListening(
-      onResult: (words) {
+      onFinalResult: (words) {
         _recognizedWords = words;
-        _state = SpeechState.processing;
+        if (words.isNotEmpty) {
+          _hasCapturedSpeech = true;
+        }
+        _state = SpeechState.completed;
+        notifyListeners();
+        onFinalResult(words);
+      },
+      onPartialResult: (words) {
+        _partialWords = words;
+        if (words.isNotEmpty && !_hasCapturedSpeech) {
+          _hasCapturedSpeech = true;
+        }
         notifyListeners();
       },
-      onListeningStopped: onListeningStopped,
     );
     
     if (!success) {
       _state = SpeechState.error;
       _errorMessage = 'Failed to start listening';
       notifyListeners();
+      return false;
     }
+    return true;
   }
 
   Future<void> stopListening() async {
     await _speechService.stopListening();
-    if (_recognizedWords.isNotEmpty) {
+    if (_recognizedWords.isNotEmpty || _partialWords.isNotEmpty) {
+      _recognizedWords = _recognizedWords.isEmpty ? _partialWords : _recognizedWords;
       _state = SpeechState.completed;
     } else {
       _state = SpeechState.idle;
@@ -84,13 +104,24 @@ class SpeechProvider extends ChangeNotifier {
     await _speechService.cancel();
     _state = SpeechState.idle;
     _recognizedWords = '';
+    _partialWords = '';
+    _hasCapturedSpeech = false;
     notifyListeners();
+  }
+
+  bool get isSessionLongEnough {
+    if (_sessionStartTime == null) return false;
+    final duration = DateTime.now().difference(_sessionStartTime!);
+    return duration.inSeconds >= 2;
   }
 
   void reset() {
     _state = SpeechState.idle;
     _recognizedWords = '';
+    _partialWords = '';
     _errorMessage = '';
+    _hasCapturedSpeech = false;
+    _sessionStartTime = null;
     notifyListeners();
   }
 

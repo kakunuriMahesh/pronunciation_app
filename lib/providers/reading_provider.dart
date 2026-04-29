@@ -30,6 +30,14 @@ class ReadingProvider extends ChangeNotifier {
   bool _isTimerActive = false;
   bool _timerCompleted = false;
 
+  // Advanced analytics
+  List<WordTimestamp> _wordTimestamps = [];
+  List<PauseEvent> _pauseEvents = [];
+  int _restartCount = 0;
+  int _partialTranscriptCount = 0;
+  String _finalTranscript = '';
+  Map<int, WordMatchStatus> _wordPositions = {};
+
   String get currentText => _currentText;
   ReadingResult? get result => _result;
   List<WordMatch> get liveMatches => _liveMatches;
@@ -53,6 +61,14 @@ class ReadingProvider extends ChangeNotifier {
   int get usedTime => _timerDuration - _remainingSeconds;
   bool get finishedEarly => _timerCompleted && _remainingSeconds > 0;
   bool get timedOut => _isTimerActive && _remainingSeconds <= 0;
+
+  // Analytics getters
+  List<WordTimestamp> get wordTimestamps => _wordTimestamps;
+  List<PauseEvent> get pauseEvents => _pauseEvents;
+  int get restartCount => _restartCount;
+  int get partialTranscriptCount => _partialTranscriptCount;
+  String get finalTranscript => _finalTranscript;
+  Map<int, WordMatchStatus> get wordPositions => _wordPositions;
 
   int _getRemainingCount() {
     final expectedWords = _tokenize(_currentText);
@@ -107,6 +123,12 @@ class ReadingProvider extends ChangeNotifier {
     _missedCount = 0;
     _pauseCount = 0;
     _repeatedWords = 0;
+    _wordTimestamps = [];
+    _pauseEvents = [];
+    _restartCount = 0;
+    _partialTranscriptCount = 0;
+    _finalTranscript = '';
+    _wordPositions = {};
     
     _remainingSeconds = _timerDuration;
     _isTimerActive = true;
@@ -115,12 +137,29 @@ class ReadingProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  bool updateLiveRecognized(String recognizedWords) {
+  void restartRecording() {
+    _restartCount++;
+    _isTimerActive = true;
+    notifyListeners();
+  }
+
+  bool updateLiveRecognized(String recognizedWords, {bool isPartial = false}) {
     if (_startTime == null) return false;
     
+    if (isPartial) {
+      _partialTranscriptCount++;
+    }
+    
     final now = DateTime.now();
-    if (_lastWordTime != null && now.difference(_lastWordTime!).inMilliseconds > 2000) {
-      _pauseCount++;
+    if (_lastWordTime != null) {
+      final pauseDuration = now.difference(_lastWordTime!).inMilliseconds;
+      if (pauseDuration > 2000) {
+        _pauseCount++;
+        _pauseEvents.add(PauseEvent(
+          timestamp: now,
+          durationMs: pauseDuration,
+        ));
+      }
     }
     _lastWordTime = now;
 
@@ -128,6 +167,7 @@ class ReadingProvider extends ChangeNotifier {
     final recognized = _tokenize(recognizedWords);
     
     _liveMatches = [];
+    _wordPositions = {};
 
     for (int i = 0; i < expectedWords.length; i++) {
       final expected = expectedWords[i];
@@ -150,6 +190,17 @@ class ReadingProvider extends ChangeNotifier {
           status: status,
           index: i,
         ));
+        
+        _wordPositions[i] = status;
+        
+        if (status == WordMatchStatus.correct && i >= _wordTimestamps.length) {
+          _wordTimestamps.add(WordTimestamp(
+            word: expected,
+            index: i,
+            timestamp: now,
+            status: status,
+          ));
+        }
       } else {
         _liveMatches.add(WordMatch(
           expectedWord: expectedWords[i],
@@ -157,6 +208,7 @@ class ReadingProvider extends ChangeNotifier {
           status: WordMatchStatus.pending,
           index: i,
         ));
+        _wordPositions[i] = WordMatchStatus.pending;
       }
     }
 
@@ -176,9 +228,9 @@ class ReadingProvider extends ChangeNotifier {
 
     notifyListeners();
 
-    // Check if sentence completed (90%+ words spoken)
+    // Check if sentence completed (95%+ words spoken correctly)
     final spokenCount = recognized.length;
-    if (spokenCount >= expectedWords.length * 0.9 && spokenCount > 0) {
+    if (spokenCount >= expectedWords.length * 0.95 && _correctCount >= expectedWords.length * 0.95) {
       return true;
     }
     
@@ -207,6 +259,7 @@ class ReadingProvider extends ChangeNotifier {
 
   void processResult(String recognizedWords) {
     _startTime ??= DateTime.now();
+    _finalTranscript = recognizedWords;
 
     final duration = DateTime.now().difference(_startTime!);
     final matches = _comparisonService.compare(_currentText, recognizedWords);
@@ -234,6 +287,10 @@ class ReadingProvider extends ChangeNotifier {
 
     _isPlaying = false;
     notifyListeners();
+  }
+
+  Future<void> speakWord(String word) async {
+    await _ttsService.speak(word);
   }
 
   Future<void> stopSpeaking() async {
@@ -266,6 +323,12 @@ class ReadingProvider extends ChangeNotifier {
     _remainingSeconds = _timerDuration;
     _isTimerActive = false;
     _timerCompleted = false;
+    _wordTimestamps = [];
+    _pauseEvents = [];
+    _restartCount = 0;
+    _partialTranscriptCount = 0;
+    _finalTranscript = '';
+    _wordPositions = {};
     notifyListeners();
   }
 
@@ -274,4 +337,28 @@ class ReadingProvider extends ChangeNotifier {
     _ttsService.dispose();
     super.dispose();
   }
+}
+
+class WordTimestamp {
+  final String word;
+  final int index;
+  final DateTime timestamp;
+  final WordMatchStatus status;
+
+  WordTimestamp({
+    required this.word,
+    required this.index,
+    required this.timestamp,
+    required this.status,
+  });
+}
+
+class PauseEvent {
+  final DateTime timestamp;
+  final int durationMs;
+
+  PauseEvent({
+    required this.timestamp,
+    required this.durationMs,
+  });
 }
