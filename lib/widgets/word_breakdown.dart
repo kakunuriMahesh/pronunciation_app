@@ -189,7 +189,7 @@ class WordBreakdown extends StatelessWidget {
     return GestureDetector(
         onTap: isTappable
             ? () {
-                final word = match.expectedWord;
+                final word = match.heardWord ?? match.expectedWord;
                 onWordTap?.call(word);
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
